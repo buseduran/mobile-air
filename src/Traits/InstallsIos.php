@@ -14,6 +14,11 @@ use function Laravel\Prompts\warning;
 
 trait InstallsIos
 {
+    private function getIosBinaryBranch(): string
+    {
+        return env('NATIVEPHP_BIN_BRANCH', 'main');
+    }
+
     public string $iosPath;
 
     protected ?bool $includeIcuIos = null;
@@ -58,11 +63,26 @@ trait InstallsIos
     private function installPHPIos(): void
     {
         $includeIcu = $this->includeIcuIos ?? false;
-        $phpVersion = $this->phpVersion;
-        $versions = $this->versionsManifest;
+        $phpVersion = $this->detectPhpVersion();
 
-        if (! $versions || ! isset($versions['versions'][$phpVersion])) {
-            error("PHP {$phpVersion} binaries not available");
+        $branch = $this->getIosBinaryBranch();
+        $versionsUrl = "https://bin.nativephp.com/{$branch}/versions.json";
+
+        $client = new Client;
+
+        try {
+            $versions = json_decode(
+                $client->get($versionsUrl)->getBody()->getContents(),
+                true
+            );
+        } catch (RequestException $e) {
+            error("Failed to fetch versions manifest from: {$versionsUrl}");
+
+            return;
+        }
+
+        if (! isset($versions['versions'][$phpVersion])) {
+            error("PHP {$phpVersion} binaries not available in {$branch} branch");
 
             return;
         }
@@ -173,6 +193,14 @@ trait InstallsIos
         $bridgeDst = $this->iosPath.'/Include/Bridge';
         if (is_dir($bridgeSrc)) {
             File::copyDirectory($bridgeSrc, $bridgeDst);
+        }
+
+        // Store ICU preference for run command
+        $icuFlagFile = base_path('nativephp/ios/.icu-enabled');
+        if ($includeIcu) {
+            File::put($icuFlagFile, '1');
+        } elseif (File::exists($icuFlagFile)) {
+            File::delete($icuFlagFile);
         }
 
         try {

@@ -15,6 +15,11 @@ trait InstallsAndroid
 {
     use PlatformFileOperations;
 
+    private function getBinaryBranch(): string
+    {
+        return env('NATIVEPHP_BIN_BRANCH', 'main');
+    }
+
     protected ?bool $includeIcu = null;
 
     public function promptAndroidOptions(): void
@@ -56,14 +61,52 @@ trait InstallsAndroid
         $this->components->task('Creating Android project', fn () => $this->platformOptimizedCopy($source, $androidPath));
     }
 
+    private function detectPhpVersion(): string
+    {
+        $composerPath = base_path('composer.json');
+
+        if (! file_exists($composerPath)) {
+            return '8.3';
+        }
+
+        $composer = json_decode(file_get_contents($composerPath), true);
+        $constraint = $composer['require']['php'] ?? '';
+
+        // Check from highest to lowest — first match wins
+        if (preg_match('/(?:\^|>=|~)?8\.5/', $constraint)) {
+            return '8.5';
+        }
+
+        if (preg_match('/(?:\^|>=|~)?8\.4/', $constraint)) {
+            return '8.4';
+        }
+
+        return '8.3';
+    }
+
     private function installPHPAndroid(): void
     {
         $includeIcu = $this->includeIcu ?? false;
-        $phpVersion = $this->phpVersion;
-        $versions = $this->versionsManifest;
+        $phpVersion = $this->detectPhpVersion();
 
-        if (! $versions || ! isset($versions['versions'][$phpVersion])) {
-            error("PHP {$phpVersion} binaries not available");
+        $branch = $this->getBinaryBranch();
+        $versionsUrl = "https://bin.nativephp.com/{$branch}/versions.json";
+
+        $client = new Client;
+
+        try {
+            $versions = json_decode(
+                $client->get($versionsUrl)->getBody()->getContents(),
+                true
+            );
+        } catch (RequestException $e) {
+            error("Failed to fetch versions manifest from: {$versionsUrl}");
+
+            return;
+        }
+
+        if (! isset($versions['versions'][$phpVersion])) {
+            error("PHP {$phpVersion} binaries not available in {$branch} branch");
 
             return;
         }
@@ -197,6 +240,14 @@ trait InstallsAndroid
         File::ensureDirectoryExists($destination);
 
         $this->components->task('Installing Android libraries', fn () => $this->platformOptimizedCopy($extractPath, $destination));
+
+        // Store ICU preference for run command
+        $icuFlagFile = base_path('nativephp/android/.icu-enabled');
+        if ($includeIcu) {
+            File::put($icuFlagFile, '1');
+        } elseif (File::exists($icuFlagFile)) {
+            File::delete($icuFlagFile);
+        }
 
         try {
             $this->removeDirectory($extractPath);
