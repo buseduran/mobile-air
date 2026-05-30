@@ -878,16 +878,20 @@ class MainActivity : FragmentActivity(), WebViewProvider {
                         contentWindowInsets = WindowInsets(0, 0, 0, 0)
                     ) { paddingValues ->
                         // Main content: WebView only
-                        // Use paddingValues to respect TopBar and BottomNav heights
-                        // IMPORTANT: Add IME (keyboard) inset padding so content isn't hidden behind keyboard
+                        // Use paddingValues to respect TopBar and BottomNav heights.
+                        // NOTE: We intentionally do NOT apply WindowInsets.ime padding here.
+                        // Doing so resizes the WebView every frame as the keyboard animates
+                        // in, forcing the web layout (100vh, position:fixed) to reflow and
+                        // jump. Instead we leave the WebView full-size and let Chromium
+                        // shrink only its visual viewport (interactive-widget=resizes-visual)
+                        // and scroll the focused field into view -> smooth keyboard.
 
                         AndroidView(
                             factory = { webView },
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(paddingValues)
-                                .consumeWindowInsets(paddingValues)
-                                .windowInsetsPadding(WindowInsets.ime),
+                                .consumeWindowInsets(paddingValues),
                             update = { view ->
                                 // Force layout recalculation when Compose size changes
                                 // This ensures viewport units (100vh, 100vw) work correctly
