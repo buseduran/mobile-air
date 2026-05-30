@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.AndroidPHP" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <item name="colorPrimary">@color/black</item>
-        <item name="colorPrimaryVariant">@color/black</item>
+        <!-- Brand accent drives native dialog accents (date/time picker buttons,
+             selected day). Was @color/black, which made the picker's button text
+             invisible on its dark background. -->
+        <item name="colorPrimary">@color/virora_accent</item>
+        <item name="colorPrimaryVariant">@color/virora_accent</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/virora_accent</item>
+        <item name="colorSecondaryVariant">@color/virora_accent</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorAccent">@color/virora_accent</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
