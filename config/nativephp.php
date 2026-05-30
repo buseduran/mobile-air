@@ -117,6 +117,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | iOS Permission String Localizations
+    |--------------------------------------------------------------------------
+    |
+    | Provide per-locale overrides for the strings declared above. Each key is
+    | a BCP 47 locale code (e.g. 'nl', 'fr', 'zh-Hans') and its value mirrors
+    | the `permissions` array shape. At build time these are written to
+    | {locale}.lproj/InfoPlist.strings inside the iOS bundle, and the locales
+    | are registered with the Xcode project so they ship with the app.
+    |
+    | iOS picks the right string at runtime based on the user's preferred
+    | language, falling back to the value in `permissions` (Info.plist).
+    |
+    | Plugins can ship their own localizations via `ios.info_plist_localizations`
+    | in their nativephp.json — app-level entries win on key collisions.
+    |
+    */
+
+    'permission_localizations' => [
+        // 'nl' => [
+        //     'NSCameraUsageDescription' => 'Gebruikt om een profielfoto te maken.',
+        //     'NSMicrophoneUsageDescription' => 'Gebruikt om audio op te nemen bij je video\'s.',
+        //     'NSPhotoLibraryUsageDescription' => 'Gebruikt om foto\'s voor je bericht te selecteren.',
+        // ],
+        // 'fr' => [
+        //     'NSCameraUsageDescription' => 'Utilisé pour prendre une photo de profil.',
+        // ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Environment Keys to Clean Up
     |--------------------------------------------------------------------------
     |
@@ -203,6 +233,32 @@ return [
         |
         */
         'status_bar_style' => 'auto',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Android Theme Colors
+        |--------------------------------------------------------------------------
+        |
+        | Colors applied to the generated Android theme (Theme.AndroidPHP). These
+        | drive the colorPrimary / colorOnPrimary values used by native dialogs
+        | such as the date and time pickers (OK / Cancel buttons).
+        |
+        | The night value is written to values-night/themes.xml so Android can
+        | switch automatically when the device is in dark mode.
+        |
+        | Values must be hex strings: #RRGGBB or #AARRGGBB. Wrap them in quotes
+        | inside your .env file (e.g. NATIVEPHP_ANDROID_COLOR_PRIMARY="#04ABA6")
+        | because '#' starts a comment in .env.
+        |
+        | Both values/themes.xml and values-night/themes.xml are written from
+        | these values during `php artisan native:install`.
+        |
+        */
+        'theme' => [
+            'color_primary' => env('NATIVEPHP_ANDROID_COLOR_PRIMARY', '#04ABA6'),
+            'color_primary_night' => env('NATIVEPHP_ANDROID_COLOR_PRIMARY_NIGHT', '#FFFFFF'),
+            'color_on_primary' => env('NATIVEPHP_ANDROID_COLOR_ON_PRIMARY', '#FFFFFF'),
+        ],
 
         /*
         |--------------------------------------------------------------------------
