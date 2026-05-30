@@ -8,4 +8,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="virora_accent">#FFC44B56</color>
+    <color name="virora_canvas">#FFF6EFE4</color>
 </resources>
