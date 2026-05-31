@@ -523,7 +523,7 @@ XML;
 
             // Install APK to specific device using adb -s (more reliable than Gradle's device serial flag)
             $apkPath = base_path('nativephp/android/app/build/outputs/apk/debug/app-debug.apk');
-            $installCmd = "$adbCommand -s $targetDeviceId install -r \"$apkPath\"";
+            $installCmd = "$adbCommand -s ".escapeshellarg((string) $targetDeviceId).' install -r '.escapeshellarg($apkPath);
             $this->logToFile("Installing APK: $installCmd");
             $installResult = Process::run($installCmd);
 
@@ -540,7 +540,7 @@ XML;
 
             $this->logToFile('APK installed on device');
 
-            $launchCmd = "$adbCommand -s $targetDeviceId shell am start -n $appId/$mainActivity";
+            $launchCmd = "$adbCommand -s ".escapeshellarg((string) $targetDeviceId)." shell am start -n $appId/$mainActivity";
             $this->logToFile("Launching app: $launchCmd");
             $launchResult = Process::run($launchCmd);
 
