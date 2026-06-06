@@ -878,16 +878,16 @@ class MainActivity : FragmentActivity(), WebViewProvider {
                         contentWindowInsets = WindowInsets(0, 0, 0, 0)
                     ) { paddingValues ->
                         // Main content: WebView only
-                        // Use paddingValues to respect TopBar and BottomNav heights
-                        // IMPORTANT: Add IME (keyboard) inset padding so content isn't hidden behind keyboard
+                        // Use paddingValues to respect TopBar and BottomNav heights.
+                        // Avoid applying IME padding here; resizing the WebView during
+                        // keyboard animation causes visible web layout jumps.
 
                         AndroidView(
                             factory = { webView },
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(paddingValues)
-                                .consumeWindowInsets(paddingValues)
-                                .windowInsetsPadding(WindowInsets.ime),
+                                .consumeWindowInsets(paddingValues),
                             update = { view ->
                                 // Force layout recalculation when Compose size changes
                                 // This ensures viewport units (100vh, 100vw) work correctly
